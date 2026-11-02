@@ -22,6 +22,25 @@ bool has_scheme(const QString &text)
         return false;
     }
     const QString head = text.left(colon);
+    const QString suffix = text.mid(colon + 1);
+    int port_end = 0;
+    while (port_end < suffix.size() &&
+           suffix.at(port_end).isDigit() &&
+           suffix.at(port_end).unicode() <= QLatin1Char('9').unicode()) {
+        port_end++;
+    }
+    const bool numeric_port =
+        port_end > 0 &&
+        (port_end == suffix.size() ||
+         suffix.at(port_end) == QLatin1Char('/') ||
+         suffix.at(port_end) == QLatin1Char('?') ||
+         suffix.at(port_end) == QLatin1Char('#'));
+    if (numeric_port &&
+        (head.compare(QStringLiteral("localhost"),
+                      Qt::CaseInsensitive) == 0 ||
+         head.contains(QLatin1Char('.')))) {
+        return false;
+    }
     if (head.isEmpty() || !head.at(0).isLetter()) {
         return false;
     }
@@ -47,8 +66,21 @@ bool looks_like_host(const QString &text)
     /* "localhost:8080" — no dot, but a colon-port on the end. */
     const int colon = text.indexOf(QLatin1Char(':'));
     if (colon > 0) {
-        const QString port = text.mid(colon + 1);
-        return !port.isEmpty() && port.toInt() > 0;
+        const QString tail = text.mid(colon + 1);
+        int port_end = 0;
+        while (port_end < tail.size() &&
+               tail.at(port_end).isDigit() &&
+               tail.at(port_end).unicode() <= QLatin1Char('9').unicode()) {
+            port_end++;
+        }
+        bool ok = false;
+        const int port = tail.left(port_end).toInt(&ok);
+        const bool has_path =
+            port_end == tail.size() ||
+            tail.at(port_end) == QLatin1Char('/') ||
+            tail.at(port_end) == QLatin1Char('?') ||
+            tail.at(port_end) == QLatin1Char('#');
+        return ok && port > 0 && has_path;
     }
     return false;
 }

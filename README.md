@@ -21,6 +21,10 @@ The makefile takes an action as its first argument: `install` (the default),
 `build`, `run`, `software` and `uninstall`. `software` runs the browser with CPU
 rendering forced (`--software`).
 
+`src/GnuChanBrowser_config/GnuChanBrowser.conf` is a plain-text settings
+template (`Key = value` lines). The browser currently does not load or install
+this template; its window and home-page values remain compiled defaults.
+
 ## Dependencies
 
 The makefile probes for these headers and installs the matching package when one
